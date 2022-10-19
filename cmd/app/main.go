@@ -8,9 +8,13 @@ import (
 	"mailing/internal/sender"
 	"mailing/pkg/helpers/pg"
 	"os"
+	"sync"
 )
 
+var wg sync.WaitGroup
+
 func main() {
+	defer wg.Wait()
 	cfg := &pg.Config{}
 	cfg.Host = "localhost"
 	cfg.Username = "db_user"
@@ -67,7 +71,7 @@ func main() {
 		if sendtime != "" {
 			c.String(200, "The message will be sent at time: "+sendtime)
 
-			sender.SendEmail(sendtime, msg, subs)
+			sender.SendEmail(sendtime, msg, subs, &wg)
 
 		} else {
 			c.HTML(200, "Message.html", gin.H{
@@ -78,10 +82,11 @@ func main() {
 	})
 
 	router.GET("/welcome", func(c *gin.Context) {
-		c.HTML(200, "welcome.html", gin.H{
-			"Firstname": "Kolya",
-			"Lastname":  "Ivanov",
-		})
+		c.HTML(200, "welcome.html", subs[0])
+	})
+
+	router.GET("/gift", func(c *gin.Context) {
+		c.HTML(200, "gift.html", subs[0])
 	})
 
 	router.Run()
