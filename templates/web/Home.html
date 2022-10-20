@@ -12,12 +12,7 @@
     <meta name="generator" content="Nicepage 4.19.3, nicepage.com">
     <link id="u-theme-google-font" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,500,500i,600,600i,700,700i,800,800i">
     
-    
-    <script type="application/ld+json">{
-		"@context": "http://schema.org",
-		"@type": "Organization",
-		"name": ""
-}</script>
+
     <meta name="theme-color" content="#478ac9">
     <meta property="og:title" content="Home">
     <meta property="og:type" content="website">
@@ -52,7 +47,20 @@
         </nav>
       </div></header>
     <section class="u-clearfix u-section-1" id="sec-c3d7">
-      <div class="u-clearfix u-sheet u-sheet-1"></div>
+      <div class="u-clearfix u-sheet u-sheet-1">
+              <form action="">
+                  <label for="name-b480" class="u-label">messageID</label>
+                  <input type="text" placeholder="messageID" id="name-b480" name="messageId" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white" required="">
+                  <p>
+                      <button value="submit">Submit</button>
+                  </p>
+              </form>
+          <p>Message have been opened times</p>
+          <textarea id="opened" rows="2" cols="100">{{ .opened }}</textarea>
+
+          <p>Message have been opened by</p>
+          <textarea id="openers" rows="1" cols="100">{{ .openers }}</textarea>
+          </div>
     </section>
     
     

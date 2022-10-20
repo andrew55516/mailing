@@ -14,7 +14,7 @@ import (
 var auth = smtp.PlainAuth("", "andrey.aksenov2001@gmail.com", "hdcirobywejtbibo", "smtp.gmail.com")
 var headers = "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";"
 
-func SendEmail(sendtime string, tmpl string, subs []dbsubs.Subscriber, wg *sync.WaitGroup) {
+func SendEmail(messageId int, sendtime string, tmpl string, subs []dbsubs.Subscriber, wg *sync.WaitGroup) {
 
 	subject := strings.ToUpper(tmpl)
 	tmplPath := "templates/msg/" + tmpl + ".html"
@@ -25,11 +25,7 @@ func SendEmail(sendtime string, tmpl string, subs []dbsubs.Subscriber, wg *sync.
 
 	msg := "Subject: " + subject + "\n" + headers + "\n\n"
 	if sendtime == "now" {
-		//for _, sub := range subs {
-		//	wg.Add(1)
-		//	go sendToOne(t, msg, sub, wg)
-		//}
-		sendToAll(t, msg, subs, wg)
+		sendToAll(messageId, t, msg, subs, wg)
 
 	} else {
 		sendtime = strings.Replace(sendtime, "T", " ", -1)
@@ -41,20 +37,32 @@ func SendEmail(sendtime string, tmpl string, subs []dbsubs.Subscriber, wg *sync.
 			log.Println(err)
 		}
 
-		go func(d time.Time, t *template.Template, msg string, subs []dbsubs.Subscriber, wg *sync.WaitGroup) {
+		go func(d time.Time, messageId int, t *template.Template, msg string, subs []dbsubs.Subscriber, wg *sync.WaitGroup) {
 			time.Sleep(time.Until(d))
-			sendToAll(t, msg, subs, wg)
-		}(d, t, msg, subs, wg)
+			sendToAll(messageId, t, msg, subs, wg)
+		}(d, messageId, t, msg, subs, wg)
 
 	}
 }
 
-func sendToOne(t *template.Template, msg string, sub dbsubs.Subscriber, wg *sync.WaitGroup) {
+func sendToOne(messageId int, t *template.Template, msg string, sub dbsubs.Subscriber, wg *sync.WaitGroup) {
 	defer wg.Done()
 	log.Println("Sending...")
 	var body bytes.Buffer
 
-	err := t.Execute(&body, sub)
+	err := t.Execute(&body, struct {
+		Email     string
+		Firstname string
+		Lastname  string
+		Birthday  string
+		MessageId int
+	}{
+		Email:     sub.Email,
+		Firstname: sub.Firstname,
+		Lastname:  sub.Lastname,
+		Birthday:  sub.Birthday,
+		MessageId: messageId,
+	})
 	if err != nil {
 		log.Println(err)
 	}
@@ -72,9 +80,9 @@ func sendToOne(t *template.Template, msg string, sub dbsubs.Subscriber, wg *sync
 	}
 }
 
-func sendToAll(t *template.Template, msg string, subs []dbsubs.Subscriber, wg *sync.WaitGroup) {
+func sendToAll(messageId int, t *template.Template, msg string, subs []dbsubs.Subscriber, wg *sync.WaitGroup) {
 	for _, sub := range subs {
 		wg.Add(1)
-		go sendToOne(t, msg, sub, wg)
+		go sendToOne(messageId, t, msg, sub, wg)
 	}
 }
